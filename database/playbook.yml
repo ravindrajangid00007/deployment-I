@@ -1,0 +1,80 @@
+---
+- name: setting up maraidb database 
+  hosts: database
+  tasks:
+    - name: install mariadb on mariadb-server
+      yum:
+        name: mariadb-server
+        state: present
+    
+    - name: Enalbe and start mariadb
+      service:
+        name: mariadb
+        state: started
+        enabled: true
+
+    - name:
+      yum:
+        name: python3-PyMySQL
+        state: present
+
+
+    - name: authenticate credentials copied to root home die
+      copy:
+        src: files/my.cnf
+        dest: /root/.my.cnf
+
+    - name: updating root use with password
+      mysql_user:
+        name: root
+        host_all:  yes
+        update_password: always
+        password: root
+
+          
+
+    - name: remove anonymous use accounts
+      mysql_user:
+        name: ''
+        host_all: true
+        state: absent
+
+    - name: removing test database
+      mysql_db:
+        name: test
+        state: absent
+    - name: creating database
+      mysql_db:
+        name: Scheduler
+        state: present
+
+    - name: creating user 
+      mysql_user:
+        name: "{{ item['name'] }}"
+        password: "{{ item['password'] }}"
+        update_password: on_create
+        state: present
+      loop: "{{ mysql_user_password }}"
+
+    - name: granting premission
+      mysql_user:
+        name: "{{ item['name'] }}"
+        host: '%'
+        priv: 'Scheduler.*:INSERT,UPDATE,DELETE,SELECT'
+        state: present
+      
+      loop: "{{ mysql_user_password }}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+

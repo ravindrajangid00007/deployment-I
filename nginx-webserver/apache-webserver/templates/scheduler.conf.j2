@@ -1,0 +1,18 @@
+server {
+	listen 80;
+	server_name scheduler.example.com
+	return 301 https://scheduler.example.com
+}
+
+server {
+    	listen 443 ssl;
+    	server_name  scheduler.example.com;
+	ssl_certificate "/etc/pki/nginx/scheduler.crt";
+    	ssl_certificate_key "/etc/pki/nginx/private/scheduler.rsa.key";
+    	location / {
+	root /srv/www/scheduler
+    }
+}
+
+
+

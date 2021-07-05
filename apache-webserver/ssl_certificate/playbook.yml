@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - openssl_privatekey:
+        path: ./keys/ansible.rsa.key
+    - openssl_csr:
+        path: ./keys/ansible.csr
+        privatekey_path: ./keys/ansible.rsa.key
+        subject_alt_name: 'DNS:site.example.com IP:13.235.114.227'
+        C: US
+        ST: North Carolina
+        L: Raleigh
+        O: Example, Inc.
+        backup: yes
+    - openssl_certificate:
+        path: ./keys/ansible.crt
+        privatekey_path: ./keys/ansible.rsa.key
+        csr_path: ./keys/ansible.csr
+        provider:  selfsigned
+        selfsigned_not_after: +90d

@@ -1,0 +1,56 @@
+---
+- name: setting up web server
+  hosts: web
+  vars:
+    selinux_fcontexts:
+      - { target: '/srv/www(/.*)?', setype: 'httpd_sys_content_t', ftype: 'd', state: 'present' }
+       
+  tasks:
+    - name: installing required pacakeges
+      apt:
+        name: 
+          - nginx
+          - policycoreutils-python-utils
+        state: present
+    - file:
+        path: /srv/www/scheduler
+        state: directory
+        mode: '2755'
+
+    - include_role:
+        name: rhel-system-roles.selinux
+
+    - name: deploy content
+      template:
+        src: index.html.j2
+        dest: /srv/www/scheduler/index.html
+    - name:  deploy certificates
+      copy:
+        src: ./keys/ansible.crt
+        dest: /etc/pki/tls/certs
+    - name: deploy private  key
+      copy:
+        src: ./keys/ansible.rsa.key
+        dest: /etc/pki/tls/private/scheduler.rsa.key
+        mode: '0600'
+      notify: reload server
+
+    - name: configure server
+      template:
+        src: site.conf.j2
+        dest: /etc/httpd/conf.d/site.conf
+      notify: reload server
+    - name: configure server
+      template:
+        src: 00-default.conf.j2
+        dest: /etc/httpd/conf.d/00-default.conf
+      notify: reload server
+    - service:
+        name: httpd
+        state: started
+        enabled: yes
+  handlers:
+    - name: reload server
+      service:
+        name: httpd
+        state: restarted

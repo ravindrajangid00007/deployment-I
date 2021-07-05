@@ -1,0 +1,11 @@
+ErrorLog logs/site_error_log
+TransferLog logs/site_access_log
+LogLevel warn
+
+DocumentRoot /srv/site/www
+
+<Directory /srv/site/www>
+	Require all granted
+</Directory>
+
+

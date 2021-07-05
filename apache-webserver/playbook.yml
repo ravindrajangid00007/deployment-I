@@ -1,0 +1,40 @@
+---
+- name: setting up web server
+  hosts: web
+  vars:
+    selinux_fcontexts:
+      - { target: '/srv/site(/.*)?', setype: 'httpd_sys_content_t', ftype: 'd', state: 'present' } 
+  tasks:
+    - name: installing required pacakeges
+      yum:
+        name: 
+          - httpd
+          - policycoreutils-python-utils
+        state: present
+    
+    - include_role:
+        name: rhel-system-roles.selinux
+    - file:
+        path: /srv/site/www
+        state: directory
+        mode: '2755'
+        setype: '_default'
+    - name: deploy content
+      template:
+        src: index.html.j2
+        dest: /srv/site/www/index.html
+
+    - name: configure server
+      template:
+        src: 00-default.conf.j2
+        dest: /etc/httpd/conf.d/00-default.conf
+      notify: reload server
+    - service:
+        name: httpd
+        state: started
+        enabled: yes
+  handlers:
+    - name: reload server
+      service:
+        name: httpd
+        state: restarted

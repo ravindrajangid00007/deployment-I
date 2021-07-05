@@ -1,0 +1,24 @@
+<VirtualHost *:80>
+	ServerName site.example.com
+	Redirect "/" "https://site.example.com"
+</VirtualHost>
+
+<VirtualHost *:443>
+	ServerName site.example.com
+	ErrorLog logs/ssl_error_log
+	TransferLog logs/ssl_access_log
+	LogLevel warn
+	SSLEngine on
+	SSLProtocol all -SSLv3
+	SSLProxyProtocol all -SSLv3
+	SSLCertificateFile /etc/pki/tls/certs/ansible.crt
+	SSLCertificateKeyFile /etc/pki/tls/private/ansible.rsa.key
+	CustomLog logs/ssl_request_log \
+	          "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+	DocumentRoot /srv/site/www
+	<Directory /srv/site/www>
+		Require all granted
+	</Directory>
+</VirtualHost>
+
+
